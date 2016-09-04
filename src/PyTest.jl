@@ -30,13 +30,10 @@ end
 macro pytest(test_function)
   fargs = [farg for farg in test_function.args[1].args[1:end]]
   escfargs = [esc(farg) for farg in fargs]
-  get_fixture_results_expr = quote
-    [get_fixture_result(eval(farg), results) for farg in $fargs]
-  end
-  println(dump(get_fixture_results_expr.args[2]))
+  escfargs2 = Expr(:vect, escfargs...)
   return quote
     results = Dict{Symbol, Any}()
-    farg_results = $get_fixture_results_expr
+    farg_results = [get_fixture_result(f, results) for f in $escfargs2]
     $test_function(farg_results...)
   end
 end

@@ -7,9 +7,13 @@ using Base.Test
 
 counter = Dict("counter" => 0)
 
-@fixture f function() counter["counter"] end
+@fixture f function() counter["counter"] += 1 end
 @fixture g function(f) "dupa"*string(f) end
 @fixture h function(f, g) "dupa"*string(f)*g end
+
+@pytest function(f)
+  println("oneargs", f)
+end
 
 @pytest function(f, g, h)
   println("hello", f, g)

@@ -1,0 +1,1 @@
+immutable PyTestException <: Exception end

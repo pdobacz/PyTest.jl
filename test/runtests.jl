@@ -78,16 +78,15 @@ let
   @fixture h function(g)
     assert(typeof(f) == PyTest.Fixture)
     assert(g == :f_result)
+    g
   end
 
   assert(typeof(f) == typeof(g) == typeof(h) == PyTest.Fixture)
 
-  #= TODO: FAILS
   @pytest function(h)
     assert(typeof(f) == PyTest.Fixture)
     assert(h == :f_result)
   end
-  =#
 end
 
 # undefined fixture

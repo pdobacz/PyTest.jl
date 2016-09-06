@@ -50,7 +50,7 @@ macro pytest(test_function)
 
     results = Dict{Symbol, Any}()
     farg_results = [get_fixture_result(f, results, fixtures_dict) for f in fixtures]
-    $test_function(farg_results...)
+    $(esc(test_function))(farg_results...)
   end
 end
 

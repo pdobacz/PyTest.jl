@@ -56,22 +56,17 @@ let
     assert(h == [2, 2])
   end
 
-  # TODO: this should not have f,g
-  @pytest function(f, g, h)
+  @pytest function(h)
     assert(h == [3, 3])
   end
 end
 
-# no-fixture tests, execution of body
-#= TODO: FAILS
+# no-fixture tests, execution of body anyway
 let
-  counter = 0
-  @pytest function()
-    called += 1
-  end
-  assert(called == 1)
+  called = false
+  @pytest function() called = true end
+  assert(called)
 end
-=#
 
 # correct scoping within and outside fixture/test bodies
 let
@@ -95,31 +90,10 @@ let
   =#
 end
 
-# undefined fixture in fixture
-#= TODO: fails
-let
-  @test_throws UndefVarError @fixture f function(g) end
-end
-=#
-
-# undefined fixture in pytest
+# undefined fixture
 let
   @test_throws UndefVarError @pytest function(g) end
 end
-
-# incorrect syntax fixture
-#= TODO: FAILS, NO IDEA WHY, problem with test_throws
-let
-  @test_throws ArgumentError @fixture function() end f
-end
-=#
-
-# incorrect syntax pytest
-#= TODO as above
-let
-  @test_throws ArgumentError @pytest function f() end
-end
-=#
 
 # different module for fixture test
 using different_module

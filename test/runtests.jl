@@ -19,7 +19,6 @@ module tst
 
 using PyTest
 using Base.Test
-using SHA
 
 # correct syntax, chaining of fixtures, basic usage flow
 let
@@ -94,7 +93,7 @@ let
   @test_throws UndefVarError @pytest function(g) end
 end
 
-# different module for fixture test
+# fixture defined in different module
 using different_module
 let
   @pytest function(different_module_f, different_module_g)

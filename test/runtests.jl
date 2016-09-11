@@ -4,7 +4,7 @@ reload("PyTest")
 module different_module
   using PyTest
 
-  export different_module_f, different_module_g,
+  export different_module_f, different_module_g, 
          some_function
 
   @fixture different_module_f function() :dmf_result end

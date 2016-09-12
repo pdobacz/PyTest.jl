@@ -69,10 +69,15 @@ macro pytest(test_function)
     # empty collection of fixtures' results
     results = Dict{Symbol, Any}()
 
+    # empty collection of fixtures' tasks (for pytest-style teardown)
+    tasks = Dict{Symbol, Task}()
+
     # go through all fixtures used (recursively) and evaluate
-    farg_results = [get_fixture_result(f, results) for f in fixtures]
+    farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
 
     $(esc(test_function))(farg_results...)
+
+    [teardown_fixture(f, tasks) for f in fixtures]
   end
 end
 
@@ -86,14 +91,30 @@ function get_fixtures_from_function(f)
 end
 
 "Convenience function to call a single fixture, after all dependencies are called"
-function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any})
+function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task})
   if fixture.s in keys(results)
     return results[fixture.s]
   end
-  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results) for farg in fixture.fargs]
-  new_result = fixture.f(farg_results...)
+  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks) for farg in fixture.fargs]
+  new_task = Task(() -> fixture.f(farg_results...))
+  new_result = consume(new_task)
   results[fixture.s] = new_result
+  if(!istaskdone(new_task))
+    tasks[fixture.s] = new_task
+  end
   new_result
+end
+
+"FIXME: docs"
+function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Task})
+  if !(fixture.s in keys(tasks))
+    return nothing
+  end
+  [teardown_fixture(fixture.fixtures_dict[farg], tasks) for farg in fixture.fargs]
+  consume(tasks[fixture.s])
+  assert(istaskdone(tasks[fixture.s]))
+  delete!(tasks, fixture.s)
+  nothing
 end
 
 include("builtin.jl")

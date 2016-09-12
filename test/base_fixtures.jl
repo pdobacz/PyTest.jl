@@ -104,3 +104,21 @@ let
   @fixture f function() assert(some_function() == :some_function_result) end
   @pytest function(f) assert(some_function() == :some_function_result) end
 end
+
+# teardown
+let
+  active_objects = []
+  @fixture f function()
+    produce(push!(active_objects, :f_result))
+    pop!(active_objects)
+  end
+  @fixture g function(f) push!(active_objects, :g_result) end
+  @fixture h function(f, g)
+    produce(push!(active_objects, :h_result))
+    push!(active_objects, :h_down)
+  end
+  @pytest function(h)
+    @test active_objects == [:f_result, :g_result, :h_result]
+  end
+  @test active_objects == [:f_result, :g_result, :h_down]
+end

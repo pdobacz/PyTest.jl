@@ -1,4 +1,4 @@
-"""
+#= """
 Produces a fresh temporary dir, which is deleted on teardown
 
 Usage:
@@ -9,7 +9,8 @@ Usage:
   # test stuff in the tempdir, don't worry about cleanup or clashes
 end
 ```
-"""
+""" =#
+# FIXME this is not documentable, hmm...
 @fixture tempdir function()
   the_directory = Base.mktempdir()
   produce(the_directory)  # next lines are fixture teardown

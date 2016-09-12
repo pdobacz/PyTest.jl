@@ -3,7 +3,8 @@ module PyTest
 include("exceptions.jl")
 
 export @fixture, @pytest,
-       PyTestException
+       PyTestException,
+       tempdir
 
 "Helper type holding information about a fixture definition"
 type Fixture
@@ -94,5 +95,7 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any})
   results[fixture.s] = new_result
   new_result
 end
+
+include("builtin.jl")
 
 end # module

@@ -7,6 +7,6 @@ using PyTest
 using Base.Test
 
 include("base_fixtures.jl")
-
+include("builtin/tempdir.jl")
 
 end

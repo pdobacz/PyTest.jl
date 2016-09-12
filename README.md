@@ -10,6 +10,8 @@ To install, you need to clone the git repo manually into the appropriate package
 
 ## Example use
 
+When in need of a particular test resources `needed_resource` and `needed_resource2` (which may depend on each other), you can separate the setup code for these resources as follows:
+
 ```julia
 
 using PyTest
@@ -30,3 +32,11 @@ end
 end
 ```
 
+If a resource needs teardown to be done after tests are over, use the `produce` function instead of returning in the fixture function:
+
+```julia
+@fixture torndown()
+  produce("some result")
+  # here do the teardown
+  # this will be called after a test using this completes
+```

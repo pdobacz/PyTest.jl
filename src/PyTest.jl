@@ -105,7 +105,7 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks:
   new_result
 end
 
-"FIXME: docs"
+"Convenience function to call the teardown bits, after all dependencies got torn down"
 function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Task})
   if !(fixture.s in keys(tasks))
     return nothing

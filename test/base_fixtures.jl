@@ -105,20 +105,24 @@ let
   @pytest function(f) assert(some_function() == :some_function_result) end
 end
 
-# teardown
+# teardown gets called in right order
 let
   active_objects = []
   @fixture f function()
-    produce(push!(active_objects, :f_result))
+    produce(push!(active_objects, :f_result))  # next lines are teardown
     pop!(active_objects)
   end
   @fixture g function(f) push!(active_objects, :g_result) end
   @fixture h function(f, g)
-    produce(push!(active_objects, :h_result))
+    produce(push!(active_objects, :h_result))  # ditto
     push!(active_objects, :h_down)
   end
   @pytest function(h)
     @test active_objects == [:f_result, :g_result, :h_result]
   end
   @test active_objects == [:f_result, :g_result, :h_down]
+end
+
+# FIXME: tears down also on test failure!
+let
 end

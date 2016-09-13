@@ -40,3 +40,12 @@ If a resource needs teardown to be done after tests are over, use the `produce` 
   # here do the teardown
   # this will be called after a test using this completes
 ```
+
+`PyTest.jl` uses `Base.Test` (in its `v0.5` flavour -- `BaseTestNext`), so every `@pytest` is also a (basic) `@testset`. A description to `@testset` can be given as a name of the test function:
+
+```julia
+@pytest function test_one_equals_one()
+  @test 1 == 1
+end
+```
+

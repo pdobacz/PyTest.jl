@@ -8,11 +8,10 @@ let
   @fixture k (h, f) -> [[:k_result]; h; f]
 
   @pytest function(f, g, h, k)
-    assert(f == [:f_result])
-    assert(g == [:g_result; :f_result])
-    assert(h == [:h_result; :f_result; :g_result; :f_result])
-    assert(k == [:k_result; :h_result; :f_result; :g_result; :f_result;
-                 :f_result])
+    @test f == [:f_result]
+    @test g == [:g_result; :f_result]
+    @test h == [:h_result; :f_result; :g_result; :f_result]
+    @test k == [:k_result; :h_result; :f_result; :g_result; :f_result; :f_result]
   end
 end
 
@@ -25,16 +24,16 @@ let
   @fixture h function(f, g) return [f; g] end
 
   @pytest function(f)
-    assert(f == 1)
+    @test f == 1
   end
 
   @pytest function(f, g, h)
-    assert(f == g == 2)
-    assert(h == [2, 2])
+    @test f == g == 2
+    @test h == [2, 2]
   end
 
   @pytest function(h)
-    assert(h == [3, 3])
+    @test h == [3, 3]
   end
 end
 
@@ -42,27 +41,27 @@ end
 let
   called = false
   @pytest function() called = true end
-  assert(called)
+  @test called
 end
 
 # correct scoping within and outside fixture/test bodies
 let
   @fixture f function() :f_result end
   @fixture g function(f)
-    assert(f == :f_result)
+    @test f == :f_result
     f
   end
   @fixture h function(g)
-    assert(typeof(f) == PyTest.Fixture)
-    assert(g == :f_result)
+    @test typeof(f) == PyTest.Fixture
+    @test g == :f_result
     g
   end
 
-  assert(typeof(f) == typeof(g) == typeof(h) == PyTest.Fixture)
+  @test typeof(f) == typeof(g) == typeof(h) == PyTest.Fixture
 
   @pytest function(h)
-    assert(typeof(f) == PyTest.Fixture)
-    assert(h == :f_result)
+    @test typeof(f) == PyTest.Fixture
+    @test h == :f_result
   end
 end
 
@@ -75,8 +74,8 @@ end
 using different_module
 let
   @pytest function(different_module_f, different_module_g)
-    assert(different_module_f == :dmf_result)
-    assert(different_module_g == [:dmf_result, :dmg_result])
+    @test different_module_f == :dmf_result
+    @test different_module_g == [:dmf_result, :dmg_result]
   end
 end
 
@@ -84,7 +83,7 @@ end
 let
   @fixture f function() :one end
   @fixture f function() :two end
-  @pytest function(f) assert(f == :two) end
+  @pytest function(f) @test f == :two end
 end
 
 # use of :fixture_name in fixture body?
@@ -93,16 +92,16 @@ let
   @fixture f function() :f_result end
   @fixture g function(f) :f end
   @pytest function(f, g)
-    assert(f == :f_result)
-    assert(g == :f)
+    @test f == :f_result
+    @test g == :f
   end
 end
 
 # use of imported symbols in fixture/test body
 using different_module
 let
-  @fixture f function() assert(some_function() == :some_function_result) end
-  @pytest function(f) assert(some_function() == :some_function_result) end
+  @fixture f function() @test some_function() == :some_function_result end
+  @pytest function(f) @test some_function() == :some_function_result end
 end
 
 # teardown gets called in right order

@@ -13,7 +13,10 @@ else
     const Test = BaseTestNext
 end
 
-include("base_fixtures.jl")
-include("builtin/tempdir.jl")
+@testset "PyTest tests" begin
+  include("base_fixtures.jl")
+  include("builtin/tempdir.jl")
+  include("basetest_integration.jl")
+end
 
 end

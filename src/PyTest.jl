@@ -2,6 +2,8 @@ module PyTest
 
 include("exceptions.jl")
 
+using BaseTestNext
+
 export @fixture, @pytest,
        PyTestException,
        tempdir
@@ -60,7 +62,11 @@ end
 """
 macro pytest(test_function)
   test_function.head in [:function, :->] || throw(ArgumentError("test_function should be a function"))
-  test_function.args[1].head == :call && throw(ArgumentError("test_function should be anonymous"))
+  if (test_function.args[1].head == :call)
+    test_name = string(test_function.args[1].args[1])
+  else
+    test_name = "anonymous"
+  end
 
   fargs, escfargs = get_fixtures_from_function(test_function)
   return quote
@@ -75,7 +81,9 @@ macro pytest(test_function)
     # go through all fixtures used (recursively) and evaluate
     farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
 
-    $(esc(test_function))(farg_results...)
+    @testset $test_name begin
+      $(esc(test_function))(farg_results...)
+    end
 
     [teardown_fixture(f, tasks) for f in fixtures]
   end
@@ -86,6 +94,10 @@ end
 "Convenience function to extract information from `@pytest` `@fixture` call"
 function get_fixtures_from_function(f)
   fargs = [farg for farg in f.args[1].args[1:end]]
+  if f.args[1].head == :call
+    deleteat!(fargs, 1)
+  end
+  
   escfargs = Expr(:vect, [esc(farg) for farg in fargs]...)
   fargs, escfargs
 end

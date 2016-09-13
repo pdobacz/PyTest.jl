@@ -2,7 +2,13 @@ module PyTest
 
 include("exceptions.jl")
 
-using BaseTestNext
+# see https://github.com/JuliaCI/BaseTestNext.jl
+if VERSION >= v"0.5.0-dev+7720"
+    using Base.Test
+else
+    using BaseTestNext
+    const Test = BaseTestNext
+end
 
 export @fixture, @pytest,
        PyTestException,
@@ -97,7 +103,7 @@ function get_fixtures_from_function(f)
   if f.args[1].head == :call
     deleteat!(fargs, 1)
   end
-  
+
   escfargs = Expr(:vect, [esc(farg) for farg in fargs]...)
   fargs, escfargs
 end

@@ -1,7 +1,5 @@
 module PyTest
 
-include("exceptions.jl")
-
 # see https://github.com/JuliaCI/BaseTestNext.jl
 if VERSION >= v"0.5.0-dev+7720"
     using Base.Test
@@ -9,6 +7,9 @@ else
     using BaseTestNext
     const Test = BaseTestNext
 end
+
+include("exceptions.jl")
+include("testset.jl")
 
 export @fixture, @pytest,
        PyTestException,
@@ -87,7 +88,12 @@ macro pytest(test_function)
     # go through all fixtures used (recursively) and evaluate
     farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
 
-    @testset $test_name begin
+    output_buf = IOBuffer()
+    rd, wr = redirect_stdout()
+    testset_type = PyTestSet
+
+    # @testset $test_name begin
+    @testset $test_name testset_type $(esc(:stream))=rd begin
       $(esc(test_function))(farg_results...)
     end
 

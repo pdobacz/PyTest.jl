@@ -1,6 +1,7 @@
 # named tests
 let
   @pytest function test_name()
-    @test 1 == 1
+    println("dupa")
+    @test 1 == 0
   end
 end

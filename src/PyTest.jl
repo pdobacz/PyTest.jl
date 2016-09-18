@@ -70,6 +70,8 @@ macro pytest(test_function)
 
   fargs, escfargs = get_fixtures_from_function(test_function)
   return quote
+    full_test_name = get_full_test_name(@__FILE__, $test_name)
+
     fixtures = $escfargs
 
     # empty collection of fixtures' results
@@ -81,7 +83,7 @@ macro pytest(test_function)
     # go through all fixtures used (recursively) and evaluate
     farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
 
-    @testset $test_name begin
+    @testset "$full_test_name" begin
       $(esc(test_function))(farg_results...)
     end
 
@@ -90,6 +92,20 @@ macro pytest(test_function)
 end
 
 # helpers
+
+"Based on filename of macro call and user-supplied name get a nice qualified test name"
+function get_full_test_name(test_path, test_name)
+  runtestdir = splitdir(test_path)
+  test_file = runtestdir[2]
+  relative_testdir = ""
+  while runtestdir[1] != "/" && !isfile(joinpath(runtestdir[1], "runtests.jl"))
+    runtestdir = splitdir(runtestdir[1])
+    relative_testdir = joinpath(relative_testdir, runtestdir[2])
+  end
+  runtestdir[1] == "/" && error("unexpectedly found / when searching for tests root")
+  relative_testfile = joinpath(relative_testdir, test_file)
+  full_test_name = joinpath(relative_testfile, test_name)
+end
 
 "Convenience function to extract information from `@pytest` `@fixture` call"
 function get_fixtures_from_function(f)

@@ -2,17 +2,11 @@ module PyTest
 
 include("exceptions.jl")
 
-# see https://github.com/JuliaCI/BaseTestNext.jl
-if VERSION >= v"0.5.0-dev+7720"
-    using Base.Test
-else
-    using BaseTestNext
-    const Test = BaseTestNext
-end
-
 export @fixture, @pytest,
        PyTestException,
        tempdir
+
+ include("import_basetestnext.jl")
 
 "Helper type holding information about a fixture definition"
 type Fixture

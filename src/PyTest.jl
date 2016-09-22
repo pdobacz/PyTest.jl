@@ -147,4 +147,6 @@ end
 
 include("builtin.jl")
 
+runner_args = Dict{String, Any}()
+
 end # module

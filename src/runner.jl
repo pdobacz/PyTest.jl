@@ -1,11 +1,16 @@
 using ArgParse
+using PyTest
 
 argparse_settings = ArgParseSettings()
 @add_arg_table argparse_settings begin
-    "testpath"
-        help = "Path to tests which should be run"
+    "testpaths"
+        help = "Paths to tests which should be run"
+        nargs = '*'
+        arg_type = AbstractString
 end
 
-parsed_args = parse_args(argparse_settings)
+PyTest.add_parsed_args!(parse_args(argparse_settings))
+
+println(joinpath(pwd(), "test/runtests.jl"))
 
 include(joinpath(pwd(), "test/runtests.jl"))

@@ -48,6 +48,15 @@ macro fixture(s, fixture_function)
   end
 end
 
+runner_args = Dict{AbstractString, Any}()
+
+function add_parsed_args!(pa)
+  global runner_args
+  println("received pa $pa")
+  runner_args = pa
+  println("set runner_args $runner_args")
+end
+
 """
 Defines a single test, that calls its depenency-fixtures
 
@@ -83,8 +92,12 @@ macro pytest(test_function)
     # go through all fixtures used (recursively) and evaluate
     farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
 
-    @testset "$full_test_name" begin
-      $(esc(test_function))(farg_results...)
+    testpaths = get(runner_args, "testpaths", [])
+    println("runner args $runner_args in $full_test_name")
+    if testpaths == [] || any((testpath) -> contains(full_test_name, testpath), testpaths)
+      @testset "$full_test_name" begin
+        $(esc(test_function))(farg_results...)
+      end
     end
 
     [teardown_fixture(f, tasks) for f in fixtures]
@@ -146,7 +159,5 @@ function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Task})
 end
 
 include("builtin.jl")
-
-runner_args = Dict{String, Any}()
 
 end # module

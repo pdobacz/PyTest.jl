@@ -9,7 +9,8 @@ argparse_settings = ArgParseSettings()
         arg_type = AbstractString
 end
 
-PyTest.add_parsed_args!(parse_args(argparse_settings))
+# this line will make all @pytest sections obey the invocation's args
+PyTest.set_parsed_args!(parse_args(argparse_settings))
 
 println(joinpath(pwd(), "test/runtests.jl"))
 

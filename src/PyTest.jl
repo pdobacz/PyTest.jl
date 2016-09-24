@@ -48,14 +48,8 @@ macro fixture(s, fixture_function)
   end
 end
 
+"Internal! this should hold all PyTest specific args gathered from the invocation"
 runner_args = Dict{AbstractString, Any}()
-
-function add_parsed_args!(pa)
-  global runner_args
-  println("received pa $pa")
-  runner_args = pa
-  println("set runner_args $runner_args")
-end
 
 """
 Defines a single test, that calls its depenency-fixtures
@@ -81,26 +75,26 @@ macro pytest(test_function)
   return quote
     full_test_name = get_full_test_name(@__FILE__, $test_name)
 
-    fixtures = $escfargs
-
-    # empty collection of fixtures' results
-    results = Dict{Symbol, Any}()
-
-    # empty collection of fixtures' tasks (for pytest-style teardown)
-    tasks = Dict{Symbol, Task}()
-
-    # go through all fixtures used (recursively) and evaluate
-    farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
-
+    # only runs tests which name has been (partially) mentioned in test paths
+    # or all tests if no test path specified
     testpaths = get(runner_args, "testpaths", [])
-    println("runner args $runner_args in $full_test_name")
     if testpaths == [] || any((testpath) -> contains(full_test_name, testpath), testpaths)
+
+      fixtures = $escfargs
+      # empty collection of fixtures' results
+      results = Dict{Symbol, Any}()
+      # empty collection of fixtures' tasks (for pytest-style teardown)
+      tasks = Dict{Symbol, Task}()
+
+      # go through all fixtures used (recursively) and evaluate
+      farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
+
       @testset "$full_test_name" begin
         $(esc(test_function))(farg_results...)
       end
-    end
 
-    [teardown_fixture(f, tasks) for f in fixtures]
+      [teardown_fixture(f, tasks) for f in fixtures]
+    end
   end
 end
 
@@ -156,6 +150,12 @@ function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Task})
   assert(istaskdone(tasks[fixture.s]))
   delete!(tasks, fixture.s)
   nothing
+end
+
+"Helper function that injects invocation args to all @pytest calls"
+function set_parsed_args!(pa)
+  global runner_args
+  runner_args = pa
 end
 
 include("builtin.jl")

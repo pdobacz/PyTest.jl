@@ -49,3 +49,20 @@ If a resource needs teardown to be done after tests are over, use the `produce` 
 end
 ```
 
+**NOTE** the fully qualified name of this tests will be `path/to/testfile.jl/test_one_equals_one`, where the path is relative to directory containing `runtests.jl`.
+
+## Invoking tests using `PyTest/runner.jl`
+
+There is an experimental option to select tests to be run in style similar to `pytest`. To use:
+
+```sh
+# navigate to a package root directory (one containing the standard test/runtests.jl)
+cd path/to/package
+# assuming julia is in PATH
+# this will run all tests as if test/runtests.jl was run
+julia path/to/PyTest/runner.jl
+# this will only pick a certain test or test file
+julia path/to/PyTest/runner.jl runtests.jl/some_top_level_test_name
+julia path/to/PyTest/runner.jl testsubdir/tests.jl
+julia path/to/PyTest/runner.jl testsubdir/tests.jl/particular_test1 testsubdir/tests.jl/particular_test2
+```

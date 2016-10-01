@@ -16,3 +16,11 @@ end
   produce(the_directory)  # next lines are fixture teardown
   rm(the_directory, recursive=true)
 end
+
+immutable Request
+  fixturename::AbstractString
+end
+
+@fixture request function()
+  Request("")
+end

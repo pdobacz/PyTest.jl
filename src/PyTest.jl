@@ -4,7 +4,7 @@ include("exceptions.jl")
 
 export @fixture, @pytest,
        PyTestException,
-       tempdir
+       tempdir, request
 
  include("import_basetestnext.jl")
 
@@ -72,6 +72,9 @@ macro pytest(test_function)
   end
 
   fargs, escfargs = get_fixtures_from_function(test_function)
+
+  :request in fargs && throw(ArgumentError("test function cannot use request"))
+  
   return quote
     full_test_name = get_full_test_name(@__FILE__, $test_name)
 

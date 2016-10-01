@@ -15,7 +15,16 @@ Usage:
 end
 ```
 """
-macro fixture(s, fixture_function)
+macro fixture(args...)
+  s = args[1]
+  fixture_function = args[end]
+
+  kwargs = Dict{Symbol, Any}()
+  for arg in args[2:end-1]
+    arg.head == :(=) || throw(ArgumentError("middle arguments to @fixture must have a=b form"))
+    kwargs[arg.args[1]] = arg.args[2]
+  end
+
   typeof(s) == Symbol || throw(ArgumentError("s must be an indentifier"))
   fixture_function.head in [:function, :->] || throw(ArgumentError("fixture_function should be a function"))
   fixture_function.args[1].head == :call && throw(ArgumentError("fixture_function should be anonymous"))

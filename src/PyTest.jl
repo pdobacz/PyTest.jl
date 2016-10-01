@@ -73,8 +73,6 @@ macro pytest(test_function)
 
   fargs, escfargs = get_fixtures_from_function(test_function)
 
-  :request in fargs && throw(ArgumentError("test function cannot use request"))
-  
   return quote
     full_test_name = get_full_test_name(@__FILE__, $test_name)
 

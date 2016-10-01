@@ -12,6 +12,8 @@ include("fixture.jl")
 include("runner_args.jl")
 
 include("macros.jl")
+
+include("request.jl")
 include("builtin.jl")
 
 end # module

@@ -21,6 +21,7 @@ macro fixture(s, fixture_function)
   fixture_function.args[1].head == :call && throw(ArgumentError("fixture_function should be anonymous"))
 
   fargs, escfargs = get_fixtures_from_function(fixture_function)
+
   return quote
     fixtures = $escfargs
 
@@ -108,13 +109,20 @@ function get_fixtures_from_function(f)
 end
 
 "Convenience function to call a single fixture, after all dependencies are called"
-function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task})
+function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task};
+                            caller_name="")
   if fixture.s in keys(results)
     return results[fixture.s]
   end
-  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks) for farg in fixture.fargs]
+  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks,
+                                     caller_name=string(fixture.s)) for farg in fixture.fargs]
   new_task = Task(() -> fixture.f(farg_results...))
   new_result = consume(new_task)
+
+  if fixture.s == :request && isa(new_result, Request)
+    set_fixturename!(new_result, caller_name)
+  end
+
   results[fixture.s] = new_result
   if(!istaskdone(new_task))
     tasks[fixture.s] = new_task

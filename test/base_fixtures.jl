@@ -1,3 +1,16 @@
+# smoke test
+let
+  @fixture f function() :f_result end
+  @fixture g function(f) f end
+
+  @pytest function(f)
+    @test f == :f_result
+  end
+  @pytest function(g)
+    @test g == :f_result
+  end
+end
+
 # correct syntax, chaining of fixtures, basic usage flow
 let
   @fixture f function() return [:f_result] end

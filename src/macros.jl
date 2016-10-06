@@ -1,4 +1,4 @@
-
+import Iterators: product
 
 """
 Defines a fixture, that's called on every call to `@pytest` and calls
@@ -22,7 +22,8 @@ macro fixture(args...)
   kwargs = Dict{Symbol, Any}()
   for arg in args[2:end-1]
     arg.head == :(=) || throw(ArgumentError("middle arguments to @fixture must have a=b form"))
-    kwargs[arg.args[1]] = arg.args[2]
+    #FIXME get rid of eval
+    kwargs[arg.args[1]] = eval(arg.args[2])
   end
 
   typeof(s) == Symbol || throw(ArgumentError("s must be an indentifier"))
@@ -38,7 +39,8 @@ macro fixture(args...)
     fixtures_dict = Dict{Symbol, Fixture}(zip($fargs, fixtures))
 
     # build the Fixture instance and assign to the given variable
-    $(esc(s)) = Fixture($(string(s)), $(esc(fixture_function)), $fargs, fixtures_dict)
+    $(esc(s)) = Fixture($(string(s)), $(esc(fixture_function)), $fargs, fixtures_dict,
+                        $kwargs)
   end
 end
 
@@ -73,24 +75,67 @@ macro pytest(test_function)
     if testpaths == [] || any((testpath) -> contains(full_test_name, testpath), testpaths)
 
       fixtures = $escfargs
-      # empty collection of fixtures' results
-      results = Dict{Symbol, Any}()
-      # empty collection of fixtures' tasks (for pytest-style teardown)
-      tasks = Dict{Symbol, Task}()
 
-      # go through all fixtures used (recursively) and evaluate
-      farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
+      param_matrix = get_param_matrix(fixtures)
 
-      @testset "$full_test_name" begin
-        $(esc(test_function))(farg_results...)
+      if isempty(param_matrix)
+
+        # empty collection of fixtures' results
+        results = Dict{Symbol, Any}()
+        # empty collection of fixtures' tasks (for pytest-style teardown)
+        tasks = Dict{Symbol, Task}()
+
+        # go through all fixtures used (recursively) and evaluate
+        farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
+
+        @testset "$full_test_name" begin
+          $(esc(test_function))(farg_results...)
+        end
+
+        [teardown_fixture(f, tasks) for f in fixtures]
+      else
+        for param_tuples in param_matrix
+
+          #FIXME
+          param_set = Dict{Symbol, Any}()
+          for param_tuple in param_tuples
+            param_set[param_tuple[1]] = param_tuple[2]
+          end
+
+          # FIXME: copy pasting here
+
+          # empty collection of fixtures' results
+          results = Dict{Symbol, Any}()
+          # empty collection of fixtures' tasks (for pytest-style teardown)
+          tasks = Dict{Symbol, Task}()
+
+          # go through all fixtures used (recursively) and evaluate
+          farg_results = [get_fixture_result(f, results, tasks,
+                                             param_set=param_set) for f in fixtures]
+
+          @testset "$full_test_name[$param_set]" begin
+            $(esc(test_function))(farg_results...)
+          end
+
+          [teardown_fixture(f, tasks) for f in fixtures]
+        end
       end
-
-      [teardown_fixture(f, tasks) for f in fixtures]
     end
   end
 end
 
 # helpers
+
+function get_param_matrix(fixtures)
+  parametrized = []
+  for f in fixtures
+    if :params in keys(f.kwargs)
+      push!(parametrized, f)
+    end
+  end
+  # FIXME please...
+  product([  [(f.s, param) for param in f.kwargs[:params]] for f in parametrized]...)
+end
 
 "Based on filename of macro call and user-supplied name get a nice qualified test name"
 function get_full_test_name(test_path, test_name)
@@ -119,17 +164,22 @@ end
 
 "Convenience function to call a single fixture, after all dependencies are called"
 function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task};
-                            caller_name="")
+                            caller_name="", param_set=Dict{Symbol, Any}())
   if fixture.s in keys(results)
     return results[fixture.s]
   end
   farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks,
-                                     caller_name=string(fixture.s)) for farg in fixture.fargs]
+                                     caller_name=string(fixture.s),
+                                     param_set=param_set) for farg in fixture.fargs]
   new_task = Task(() -> fixture.f(farg_results...))
   new_result = consume(new_task)
 
   if fixture.s == :request && isa(new_result, Request)
     set_fixturename!(new_result, caller_name)
+    #FIXME caller name as symbol?
+    if symbol(caller_name) in keys(param_set)
+      set_param!(new_result, param_set[symbol(caller_name)])
+    end
   end
 
   results[fixture.s] = new_result

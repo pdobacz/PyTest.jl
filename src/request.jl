@@ -8,6 +8,11 @@ function set_fixturename!(r::Request, name)
   nothing
 end
 
+function set_param!(r::Request, param)
+  r.param = param
+  nothing
+end
+
 Request() = Request(nothing, nothing)
 
 @fixture request function()

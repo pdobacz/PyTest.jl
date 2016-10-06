@@ -4,4 +4,5 @@ type Fixture
  f::Function
  fargs::Array{Symbol, 1}  # all dependency-fixtures' symbols
  fixtures_dict  # maps dependency-fixtures' symbols to their resp. Fixtures
+ kwargs
 end

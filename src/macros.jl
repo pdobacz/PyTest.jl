@@ -79,45 +79,17 @@ macro pytest(test_function)
       param_matrix = get_param_matrix(fixtures)
 
       if isempty(param_matrix)
-
-        # empty collection of fixtures' results
-        results = Dict{Symbol, Any}()
-        # empty collection of fixtures' tasks (for pytest-style teardown)
-        tasks = Dict{Symbol, Task}()
-
-        # go through all fixtures used (recursively) and evaluate
-        farg_results = [get_fixture_result(f, results, tasks) for f in fixtures]
-
-        @testset "$full_test_name" begin
-          $(esc(test_function))(farg_results...)
-        end
-
-        [teardown_fixture(f, tasks) for f in fixtures]
+        do_single_test_run(fixtures, $(esc(test_function)), full_test_name)
       else
         for param_tuples in param_matrix
-
           #FIXME
           param_set = Dict{Symbol, Any}()
           for param_tuple in param_tuples
             param_set[param_tuple[1]] = param_tuple[2]
           end
 
-          # FIXME: copy pasting here
-
-          # empty collection of fixtures' results
-          results = Dict{Symbol, Any}()
-          # empty collection of fixtures' tasks (for pytest-style teardown)
-          tasks = Dict{Symbol, Task}()
-
-          # go through all fixtures used (recursively) and evaluate
-          farg_results = [get_fixture_result(f, results, tasks,
-                                             param_set=param_set) for f in fixtures]
-
-          @testset "$full_test_name[$param_set]" begin
-            $(esc(test_function))(farg_results...)
-          end
-
-          [teardown_fixture(f, tasks) for f in fixtures]
+          do_single_test_run(fixtures, $(esc(test_function)), "$full_test_name[$param_set]",
+                             param_set=param_set)
           # FIXME: reduce the nesting
         end
       end
@@ -126,6 +98,24 @@ macro pytest(test_function)
 end
 
 # helpers
+
+function do_single_test_run(fixtures, test_function, displayable_test_name;
+                            param_set=Dict{Symbol, Any}())
+
+  # empty collection of fixtures' results
+  results = Dict{Symbol, Any}()
+  # empty collection of fixtures' tasks (for pytest-style teardown)
+  tasks = Dict{Symbol, Task}()
+
+  # go through all fixtures used (recursively) and evaluate
+  farg_results = [get_fixture_result(f, results, tasks, param_set) for f in fixtures]
+
+  @testset "$displayable_test_name" begin
+    test_function(farg_results...)
+  end
+
+  [teardown_fixture(f, tasks) for f in fixtures]
+end
 
 function get_param_matrix(fixtures)
   consumed = Set{Symbol}()
@@ -172,15 +162,16 @@ function get_fixtures_from_function(f)
 end
 
 "Convenience function to call a single fixture, after all dependencies are called"
-function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task};
-                            caller_name="", param_set=Dict{Symbol, Any}())
+function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task},
+                            param_set::Dict{Symbol, Any};
+                            caller_name="")
   # FIXME: remove condition on :request
   if fixture.s in keys(results) && fixture.s != :request
     return results[fixture.s]
   end
-  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks,
-                                     caller_name=string(fixture.s),
-                                     param_set=param_set) for farg in fixture.fargs]
+  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks, param_set;
+                                     caller_name=string(fixture.s)
+                                     ) for farg in fixture.fargs]
   new_task = Task(() -> fixture.f(farg_results...))
   new_result = consume(new_task)
 

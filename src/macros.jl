@@ -164,22 +164,22 @@ end
 "Convenience function to call a single fixture, after all dependencies are called"
 function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task},
                             param_set::Dict{Symbol, Any};
-                            caller_name="")
+                            caller_name=symbol(""))
   # FIXME: remove condition on :request
   if fixture.s in keys(results) && fixture.s != :request
     return results[fixture.s]
   end
   farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks, param_set;
-                                     caller_name=string(fixture.s)
+                                     caller_name=fixture.s
                                      ) for farg in fixture.fargs]
   new_task = Task(() -> fixture.f(farg_results...))
   new_result = consume(new_task)
 
+  # FIXME: refac to have RequestFixture? maybe...
   if fixture.s == :request && isa(new_result, Request)
     set_fixturename!(new_result, caller_name)
-    #FIXME caller name as symbol?
-    if symbol(caller_name) in keys(param_set)
-      set_param!(new_result, param_set[symbol(caller_name)])
+    if caller_name in keys(param_set)
+      set_param!(new_result, param_set[caller_name])
     end
   end
 

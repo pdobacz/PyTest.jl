@@ -8,7 +8,7 @@ end
 # test most basic fixturename here
 let
   @fixture f function(request)
-    @test request.fixturename == "f"
+    @test request.fixturename == :f
   end
   @fixture g function(f) end
   @pytest function(f) end

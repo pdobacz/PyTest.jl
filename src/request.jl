@@ -1,5 +1,5 @@
 type Request
-  fixturename::Union{Void, AbstractString}
+  fixturename::Union{Void, Symbol}
   param::Any
 end
 

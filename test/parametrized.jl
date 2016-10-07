@@ -1,7 +1,7 @@
 # parametrized fixture called
 let
   remember = []
-  @fixture f params=[0, 1] function(request)
+  @fixture f params=(0, 1) function(request)
     request.param
   end
   @pytest function(f)
@@ -13,10 +13,10 @@ end
 # parametrized and non-parametrized fixture mixed
 let
   remember = []
-  @fixture f params=[0, 1] function(request)
+  @fixture f params=(0, 1) function(request)
     request.param
   end
-  @fixture g params=['a', 0.1] function(request)
+  @fixture g params=('a', 0.1) function(request)
     request.param
   end
   h_counter = 0
@@ -32,7 +32,7 @@ end
 # dependency as parametrized and non-parametrized fixtures
 let
   remember = []
-  @fixture f params=[0, 1] function(request)
+  @fixture f params=(0, 1) function(request)
     request.param
   end
   g_counter = 0
@@ -50,7 +50,7 @@ let
   remember = []
   f_counter = 0
   @fixture f function() f_counter += 1 end
-  @fixture g params=['a', 0.1, []] function(f, request)
+  @fixture g params=('a', 0.1, []) function(f, request)
     (f, request.param)
   end
   @pytest function(g)

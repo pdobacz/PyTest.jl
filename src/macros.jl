@@ -118,6 +118,7 @@ macro pytest(test_function)
           end
 
           [teardown_fixture(f, tasks) for f in fixtures]
+          # FIXME: reduce the nesting
         end
       end
     end
@@ -143,8 +144,6 @@ function get_param_matrix_inner!(fixtures, parametrized::Array{Fixture, 1}, cons
     end
     get_param_matrix_inner!(values(f.fixtures_dict), parametrized, consumed)
   end
-  # FIXME please...
-  product([  [(f.s, param) for param in f.kwargs[:params]] for f in parametrized]...)
 end
 
 "Based on filename of macro call and user-supplied name get a nice qualified test name"

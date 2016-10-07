@@ -58,3 +58,19 @@ let
   end
   @test remember == [(1, 'a'); (2, 0.1); (3, [])]
 end
+
+# diamond shaped dependency
+let
+  remember = []
+  @fixture f params=([], "a") function(request)
+    request.param
+  end
+  g_counter = 0
+  @fixture g function(f) return (f, g_counter += 1) end
+  h_counter = 0
+  @fixture h function(f) return (f, h_counter += 1) end
+  @pytest function(g, h)
+    push!(remember, (g,h))
+  end
+  @test remember == [(([], 1), ([], 1)); (("a", 2), ("a", 2))]
+end

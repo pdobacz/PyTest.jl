@@ -127,11 +127,21 @@ end
 # helpers
 
 function get_param_matrix(fixtures)
-  parametrized = []
+  consumed = Set{Symbol}()
+  parametrized = Array{Fixture, 1}()
+  get_param_matrix_inner!(fixtures, parametrized, consumed)
+  # FIXME please...
+  product([  [(f.s, param) for param in f.kwargs[:params]] for f in parametrized]...)
+end
+
+# FIXME: get rid of recursions?
+function get_param_matrix_inner!(fixtures, parametrized::Array{Fixture, 1}, consumed::Set{Symbol})
   for f in fixtures
-    if :params in keys(f.kwargs)
+    if :params in keys(f.kwargs) && !(f.s in consumed)
       push!(parametrized, f)
+      push!(consumed, f.s)
     end
+    get_param_matrix_inner!(values(f.fixtures_dict), parametrized, consumed)
   end
   # FIXME please...
   product([  [(f.s, param) for param in f.kwargs[:params]] for f in parametrized]...)

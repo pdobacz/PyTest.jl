@@ -38,7 +38,7 @@ let
   g_counter = 0
   @fixture g function(request) g_counter += 1 end
   h_counter = 0
-  @fixture h function(f, g) return (f, g, h_counter) end
+  @fixture h function(f, g) return (f, g, h_counter += 1) end
   @pytest function(h)
     push!(remember, h)
   end

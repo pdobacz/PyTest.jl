@@ -1,4 +1,3 @@
-import Iterators: product
 
 """
 Defines a fixture, that's called on every call to `@pytest` and calls
@@ -71,34 +70,35 @@ macro pytest(test_function)
 
     # only runs tests which name has been (partially) mentioned in test paths
     # or all tests if no test path specified
-    testpaths = get(runner_args, "testpaths", [])
-    if testpaths == [] || any((testpath) -> contains(full_test_name, testpath), testpaths)
-
-      fixtures = $escfargs
-
-      param_matrix = get_param_matrix(fixtures)
-
-      if isempty(param_matrix)
-        do_single_test_run(fixtures, $(esc(test_function)), full_test_name)
-      else
-        for param_tuples in param_matrix
-          #FIXME
-          param_set = Dict{Symbol, Any}()
-          for param_tuple in param_tuples
-            param_set[param_tuple[1]] = param_tuple[2]
-          end
-
-          do_single_test_run(fixtures, $(esc(test_function)), "$full_test_name[$param_set]",
-                             param_set=param_set)
-          # FIXME: reduce the nesting
-        end
-      end
+    if test_should_run(get(runner_args, "testpaths", []), full_test_name)
+      run_test_function($(esc(test_function)), $escfargs, full_test_name)
     end
   end
 end
 
 # helpers
 
+"Returns true if test selection should make the test execute"
+function test_should_run(testpaths, full_test_name)
+  testpaths == [] || any((testpath) -> contains(full_test_name, testpath), testpaths)
+end
+
+"Discovers parametrizations of fixtures and runs fixture functions and test function"
+function run_test_function(test_function, fixtures, full_test_name)
+  parametrizations_matrix = get_param_matrix(fixtures)
+
+  if isempty(parametrizations_matrix)
+    do_single_test_run(fixtures, test_function, full_test_name)
+  else
+    for param_tuples in parametrizations_matrix
+      param_set = Dict{Symbol, Any}(param_tuples)
+      do_single_test_run(fixtures, test_function, "$full_test_name[$param_set]";
+                         param_set=param_set)
+    end
+  end
+end
+
+"Runs test for a single setup of parameters"
 function do_single_test_run(fixtures, test_function, displayable_test_name;
                             param_set=Dict{Symbol, Any}())
 
@@ -115,26 +115,6 @@ function do_single_test_run(fixtures, test_function, displayable_test_name;
   end
 
   [teardown_fixture(f, tasks) for f in fixtures]
-end
-
-function get_param_matrix(fixtures)
-  consumed = Set{Symbol}()
-  parametrized = Array{Fixture, 1}()
-  sift_for_parametrized_fixtures!(fixtures, parametrized, consumed)
-  # FIXME please...
-  product([  [(f.s, param) for param in f.kwargs[:params]] for f in parametrized]...)
-end
-
-# FIXME: get rid of recursions?
-function sift_for_parametrized_fixtures!(fixtures, parametrized::Array{Fixture, 1},
-                                         consumed::Set{Symbol})
-  for f in fixtures
-    if :params in keys(f.kwargs) && !(f.s in consumed)
-      push!(parametrized, f)
-      push!(consumed, f.s)
-    end
-    sift_for_parametrized_fixtures!(values(f.fixtures_dict), parametrized, consumed)
-  end
 end
 
 "Based on filename of macro call and user-supplied name get a nice qualified test name"

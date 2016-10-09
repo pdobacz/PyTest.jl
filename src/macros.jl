@@ -155,7 +155,7 @@ end
 function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task},
                             param_set::Dict{Symbol, Any};
                             caller_name=symbol(""))
-  # FIXME: remove condition on :request
+  # FIXME: remove condition on :request, see also below
   if fixture.s in keys(results) && fixture.s != :request
     return results[fixture.s]
   end

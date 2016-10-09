@@ -19,7 +19,6 @@ function get_param_matrix(fixtures)
   consumed = Set{Symbol}()
   parametrized = Array{Fixture, 1}()
   sift_for_parametrized_fixtures!(fixtures, parametrized, consumed)
-  # FIXME please...
   product([parametrization_as_pairs(f) for f in parametrized]...)
 end
 

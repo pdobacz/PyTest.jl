@@ -74,3 +74,14 @@ let
   end
   @test remember == [(([], 1), ([], 1)); (("a", 2), ("a", 2))]
 end
+
+# variable as parameters
+let
+  remember = []
+  param1 = 'a'
+  @fixture f params=(param1, ) function(request)
+    request.param
+  end
+  @pytest function(f) push!(remember, f) end
+  @test remember == ['a']
+end

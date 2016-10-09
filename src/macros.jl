@@ -18,12 +18,8 @@ macro fixture(args...)
   s = args[1]
   fixture_function = args[end]
 
-  kwargs = Dict{Symbol, Any}()
-  for arg in args[2:end-1]
-    arg.head == :(=) || throw(ArgumentError("middle arguments to @fixture must have a=b form"))
-    #FIXME get rid of eval
-    kwargs[arg.args[1]] = eval(arg.args[2])
-  end
+  # remaining middle arguments should be keyword arguments like params=(1, 2, 3)
+  kwargs_expr = get_kwargs_expr(args[2:end-1])
 
   typeof(s) == Symbol || throw(ArgumentError("s must be an indentifier"))
   fixture_function.head in [:function, :->] || throw(ArgumentError("fixture_function should be a function"))
@@ -38,8 +34,9 @@ macro fixture(args...)
     fixtures_dict = Dict{Symbol, Fixture}(zip($fargs, fixtures))
 
     # build the Fixture instance and assign to the given variable
+    kwargs = Dict{Symbol, Any}($kwargs_expr...)
     $(esc(s)) = Fixture($(string(s)), $(esc(fixture_function)), $fargs, fixtures_dict,
-                        $kwargs)
+                        kwargs)
   end
 end
 
@@ -77,6 +74,18 @@ macro pytest(test_function)
 end
 
 # helpers
+
+"Processes fixture arguments and extracts an expression with keyword arguments passed"
+function get_kwargs_expr(keyword_args)
+  kwargs_declarations = Array{Expr, 1}()
+  for arg in keyword_args
+    if !(arg.head == :(=) && isa(arg.args[1], Symbol))
+      throw(ArgumentError("middle arguments to @fixture must have a=b form"))
+    end
+    push!(kwargs_declarations, Expr(:(=>), Expr(:quote, arg.args[1]), esc(arg.args[2])))
+  end
+  kwargs_expr = Expr(:vect, kwargs_declarations...)
+end
 
 "Returns true if test selection should make the test execute"
 function test_should_run(testpaths, full_test_name)

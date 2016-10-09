@@ -71,7 +71,7 @@ macro pytest(test_function)
     # only runs tests which name has been (partially) mentioned in test paths
     # or all tests if no test path specified
     if test_should_run(get(runner_args, "testpaths", []), full_test_name)
-      run_test_function($(esc(test_function)), $escfargs, full_test_name)
+      run_pytest_test($(esc(test_function)), $escfargs, full_test_name)
     end
   end
 end
@@ -84,7 +84,7 @@ function test_should_run(testpaths, full_test_name)
 end
 
 "Discovers parametrizations of fixtures and runs fixture functions and test function"
-function run_test_function(test_function, fixtures, full_test_name)
+function run_pytest_test(test_function, fixtures, full_test_name)
   parametrizations_matrix = get_param_matrix(fixtures)
 
   if isempty(parametrizations_matrix)

@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/pdobacz/PyTest.jl.svg?branch=master)](https://travis-ci.org/pdobacz/PyTest.jl)
 
+[![Coverage Status](https://coveralls.io/repos/pdobacz/PyTest.jl/badge.svg)](https://coveralls.io/r/pdobacz/PyTest.jl)
+
 At the moment, *PyTest.jl* allows a very basic setting up of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
 
 ## Instalation

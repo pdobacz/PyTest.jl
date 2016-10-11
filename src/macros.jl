@@ -139,6 +139,7 @@ function get_full_test_name(test_path, test_name)
   relative_testfile = joinpath(relative_testdir, test_file)
   full_test_name = joinpath(relative_testfile, test_name)
 end
+get_full_test_name(test_path::Void, test_name) = "<repl>/$test_name"
 
 "Convenience function to extract information from `@pytest` `@fixture` call"
 function get_fixtures_from_function(f)

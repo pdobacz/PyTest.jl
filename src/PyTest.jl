@@ -4,7 +4,7 @@ include("exceptions.jl")
 
 export @fixture, @pytest,
        PyTestException,
-       tempdir, request
+       tempdir_fixture, request
 
 include("import_basetestnext.jl")
 

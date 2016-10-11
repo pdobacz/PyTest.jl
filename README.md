@@ -4,33 +4,53 @@
 
 [![Coverage Status](https://coveralls.io/repos/pdobacz/PyTest.jl/badge.svg)](https://coveralls.io/r/pdobacz/PyTest.jl)
 
-At the moment, *PyTest.jl* allows a very basic setting up of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
+At the moment, *PyTest.jl* allows for basic setting up of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
 
 ## Instalation
 
 To install, you need to clone the git repo manually into the appropriate package directory
 
-## Example use
+## Example fixture use
 
-When in need of a particular test resources `needed_resource` and `needed_resource2` (which may depend on each other), you can separate the setup code for these resources as follows:
+When in need of a particular test resources: `needed_resource` and `needed_resource2` (which may depend on each other), you can setup fresh instances of the resources (i.e. test fixtures) as follows:
 
 ```julia
-
 using PyTest
 using TestedModule
 
 @fixture needed_resource function()
-  # returns some needed resource
+  # returns some needed_resource
 end
 
 @fixture needed_resource2 function(needed_resource)
-  # needed_resource here will hold the above resource
-  # fresh instance for every @pytest invocation
-  # returns some other needed resource
+  # needed_resource here will hold the former fixture!
+  # returns some other needed_resource2
 end
 
 @pytest function(needed_resource, needed_resource2)
   # test body using both resources
+  # (gets fresh instances of both resources for every @pytest invocation)
+end
+```
+
+A more concrete example to shed more light:
+
+```julia
+@fixture matrix_size function()
+  return 1200
+end
+
+@fixture random_numbers function(matrix_size)
+  return randn(matrix_size)
+end
+
+@fixture random_square_matrix function(matrix_size)
+  return randn(matrix_size, matrix_size)
+end
+
+@pytest function test_multiplication(random_square_matrix, random_numbers, matrix_size)
+  result = random_square_matrix * random_numbers
+  @test size(result) == (matrix_size, )
 end
 ```
 
@@ -52,6 +72,51 @@ end
 ```
 
 **NOTE** the fully qualified name of this tests will be `path/to/testfile.jl/test_one_equals_one`, where the path is relative to directory containing `runtests.jl`.
+
+**NOTE** parametrization information is appended to the name of the test, if it uses parametrized fixtures
+
+**NOTE** you may want to wrap all your test in a `@testset` invocation, so that the tests are summarized properly
+
+## Parametrized fixtures
+
+Fixtures can be parametrized. For any `@pytest` invocation that depends on parametrized fixtures, every possible combination of fixture parameters will be tried.
+
+In a parametrized fixture, the value of a parameter is fetched using a special `request` fixture:
+
+```julia
+@fixture integer_number params=[1, 2] function(request)
+  return request.param
+end
+
+@fixture some_character params=['a', 'c'] function(request)
+  return request.param
+end
+
+@pytest function test_numbers_and_chars(integer_number, some_character)
+  println(integer_number, some_character)
+end
+```
+
+This should print (among `Base.Test` summaries):
+```
+1a
+2a
+1c
+2c
+```
+
+## Example builtin fixture: `tempdir_fixture`
+
+At this stage there is a single builtin fixture `tempdir_fixture` which provides a fresh temporary directory, created and torndown specifically for the particular test.
+
+```julia
+remember = ""
+@pytest function test_isdir(tempdir_fixture)
+  remember = tempdir_fixture
+  @test isdir(tempdir_fixture)
+end
+@test !(isdir(remember))
+```
 
 ## Invoking tests using `PyTest/runner.jl`
 

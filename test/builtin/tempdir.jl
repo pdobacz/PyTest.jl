@@ -1,18 +1,16 @@
-tempdir = PyTest.tempdir
-
 # makes a good dir in default temp directory
 let
-  @pytest function(tempdir)
-    @test isdir(tempdir)
-    @test dirname(tempdir) == Base.tempdir()
+  @pytest function(tempdir_fixture)
+    @test isdir(tempdir_fixture)
+    @test dirname(tempdir_fixture) == Base.tempdir_fixture()
   end
 end
 
 # deletes the tmpdir
 let
   safe = Dict()
-  @pytest function(tempdir)
-    safe["tempdir"] = tempdir
+  @pytest function(tempdir_fixture)
+    safe["tempdir_fixture"] = tempdir_fixture
   end
-  @test !ispath(safe["tempdir"])
+  @test !ispath(safe["tempdir_fixture"])
 end

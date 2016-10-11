@@ -1,8 +1,7 @@
 # PyTest
 
 [![Build Status](https://travis-ci.org/pdobacz/PyTest.jl.svg?branch=master)](https://travis-ci.org/pdobacz/PyTest.jl)
-
-[![Coverage Status](https://coveralls.io/repos/pdobacz/PyTest.jl/badge.svg)](https://coveralls.io/r/pdobacz/PyTest.jl)
+[![Coverage Status](https://coveralls.io/repos/github/pdobacz/PyTest.jl/badge.svg?branch=master)](https://coveralls.io/github/pdobacz/PyTest.jl?branch=master)
 
 At the moment, *PyTest.jl* allows for basic setting up of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
 

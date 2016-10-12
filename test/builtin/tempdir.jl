@@ -2,7 +2,7 @@
 let
   @pytest function(tempdir_fixture)
     @test isdir(tempdir_fixture)
-    @test dirname(tempdir_fixture) == Base.tempdir_fixture()
+    @test dirname(tempdir_fixture) == Base.tempdir()
   end
 end
 

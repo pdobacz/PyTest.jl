@@ -76,6 +76,8 @@ end
 
 **NOTE** you may want to wrap all your test in a `@testset` invocation, so that the tests are summarized properly
 
+**NOTE** for more about what _could potentially_ be achieved with `pytest`-style fixtures, see [`pytest` docs on Fixtures](http://doc.pytest.org/en/latest/fixture.html).
+
 ## Parametrized fixtures
 
 Fixtures can be parametrized. For any `@pytest` invocation that depends on parametrized fixtures, every possible combination of fixture parameters will be tried.
@@ -116,6 +118,8 @@ remember = ""
 end
 @test !(isdir(remember))
 ```
+
+**NOTE** for more ideas on what builtin fixtures _could potentially_ be ofered look in [`pytest` docs here](http://doc.pytest.org/en/latest/builtin.html#builtin-fixtures-function-arguments)
 
 ## Invoking tests using `PyTest/runner.jl`
 

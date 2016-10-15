@@ -7,7 +7,11 @@ At the moment, *PyTest.jl* allows for basic setting up of test resources using [
 
 ## Instalation
 
-To install, you need to clone the git repo manually into the appropriate package directory
+To install, use the `Pkg.clone`:
+
+```julia
+Pkg.clone("git://github.com/pdobacz/PyTest.jl.git")
+```
 
 ## Example fixture use
 

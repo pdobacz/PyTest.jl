@@ -36,6 +36,8 @@ end
 end
 ```
 
+**NOTE**: For combining `@pytest` with `Base.Test.@testset` see [here](README.md#Using-with-Base-Test-@testset).
+
 A more concrete example to shed more light:
 
 ```julia
@@ -124,6 +126,20 @@ end
 ```
 
 **NOTE** for more ideas on what builtin fixtures _could potentially_ be ofered look in [`pytest` docs here](http://doc.pytest.org/en/latest/builtin.html#builtin-fixtures-function-arguments)
+
+## Using with Base Test @testset
+
+To use *PyTest.jl* fixtures in tests using standard `Base.Test.@testset`, currently one needs to nest the invocations:
+
+```julia
+@testset [CustomTestSet] [option=val...] "description $w, $v" for w in ..., v in ...
+  @pytest function test_name(...)
+    ...
+  end
+end
+```
+
+See #1.
 
 ## Invoking tests using `PyTest/runner.jl`
 

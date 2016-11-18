@@ -36,7 +36,7 @@ end
 end
 ```
 
-**NOTE**: For combining `@pytest` with `Base.Test.@testset` see [here](README.md#Using-with-Base-Test-@testset).
+**NOTE**: For combining `@pytest` with `Base.Test.@testset` see [here](https://github.com/pdobacz/PyTest.jl#using-with-base-test-testset).
 
 A more concrete example to shed more light:
 

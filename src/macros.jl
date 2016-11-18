@@ -155,7 +155,7 @@ end
 "Convenience function to call a single fixture, after all dependencies are called"
 function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task},
                             param_set::Dict{Symbol, Any};
-                            caller_name=symbol(""))
+                            caller_name=Symbol(""))
   # FIXME: remove condition on :request, see also below
   if fixture.s in keys(results) && fixture.s != :request
     return results[fixture.s]

@@ -5,7 +5,7 @@ module tst
 
 using PyTest
 
-include("../src/import_basetestnext.jl")
+using Base.Test
 
 @testset "PyTest tests" begin
   include("base_fixtures.jl")

@@ -1,5 +1,5 @@
 using PyTest
-include("../../../src/import_basetestnext.jl")
+using Base.Test
 
 # FIXME: there needs to be this top-level @testset for this to make sense
 @testset begin

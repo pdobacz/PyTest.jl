@@ -9,7 +9,7 @@ type Fixture
  kwargs
 end
 
-"Fixture's params as an array of (symbol, param) pairs"
+"Fixture's params as an array of (Symbol, param) pairs"
 function parametrization_as_pairs(fixture::Fixture)
   [(fixture.s, param) for param in fixture.kwargs[:params]]
 end

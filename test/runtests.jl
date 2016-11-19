@@ -14,6 +14,7 @@ using Base.Test
   include("basetest_integration.jl")
   include("runner.jl")
   include("builtin/tempdir.jl")
+  include("builtin/monkeypatch.jl")
 end
 
 end

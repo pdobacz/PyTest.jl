@@ -4,7 +4,8 @@ include("exceptions.jl")
 
 export @fixture, @pytest,
        PyTestException,
-       tempdir_fixture, request
+       tempdir_fixture, monkeypatch,
+       request
 
 using Base.Test
 

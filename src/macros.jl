@@ -116,14 +116,16 @@ function do_single_test_run(fixtures, test_function, displayable_test_name;
   # empty collection of fixtures' tasks (for pytest-style teardown)
   tasks = Dict{Symbol, Task}()
 
-  # go through all fixtures used (recursively) and evaluate
-  farg_results = [get_fixture_result(f, results, tasks, param_set) for f in fixtures]
+  try
+    # go through all fixtures used (recursively) and evaluate
+    farg_results = [get_fixture_result(f, results, tasks, param_set) for f in fixtures]
 
-  @testset "$displayable_test_name" begin
-    test_function(farg_results...)
+    @testset "$displayable_test_name" begin
+      test_function(farg_results...)
+    end
+  finally
+    [teardown_fixture(f, tasks) for f in fixtures]
   end
-
-  [teardown_fixture(f, tasks) for f in fixtures]
 end
 
 "Based on filename of macro call and user-supplied name get a nice qualified test name"
@@ -175,9 +177,8 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks:
   end
 
   results[fixture.s] = new_result
-  if(!istaskdone(new_task))
-    tasks[fixture.s] = new_task
-  end
+  tasks[fixture.s] = new_task
+
   new_result
 end
 
@@ -187,8 +188,13 @@ function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Task})
     return nothing
   end
   [teardown_fixture(fixture.fixtures_dict[farg], tasks) for farg in fixture.fargs]
-  consume(tasks[fixture.s])
-  assert(istaskdone(tasks[fixture.s]))
+
+  teardown_task = tasks[fixture.s]
+  if(!istaskdone(teardown_task))
+    consume(teardown_task)
+  end
+
+  assert(istaskdone(tasks[fixture.s]))  # extra check just in case
   delete!(tasks, fixture.s)
   nothing
 end

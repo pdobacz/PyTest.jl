@@ -135,6 +135,45 @@ let
   @test active_objects == [:f_result, :g_result, :h_down]
 end
 
-# FIXME: tears down also on test failure!
+# tears down even if intermediate fixture is noop
 let
+  deleted = []
+  @fixture f function()
+    produce(nothing)
+    push!(deleted, :f_result)
+  end
+  @fixture g function(f) end
+  @pytest function(g) error end
+  @test deleted == [:f_result]
+end
+
+# tears down also on exception in test
+let
+  deleted = []
+  @fixture f function()
+    produce(nothing)
+    push!(deleted, :f_result)
+  end
+  @fixture g function(f)
+    produce(nothing)
+    push!(deleted, :g_result)
+  end
+  @pytest function(g) error end
+  @test deleted == [:f_result, :g_result]
+end
+
+# tears down also on exception in fixture
+let
+  deleted = []
+  @fixture f function()
+    produce(nothing)
+    push!(deleted, :f_result)
+  end
+  @fixture g function(f)
+    produce(nothing)
+    push!(deleted, :g_result)
+  end
+  @fixture h function(g) end
+  @pytest function(h) error end
+  @test deleted == [:f_result, :g_result]
 end

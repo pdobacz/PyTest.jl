@@ -5,8 +5,8 @@ module different_module
   export different_module_f, different_module_g,
          some_function
 
-  @fixture different_module_f function() :dmf_result end
-  @fixture different_module_g function(different_module_f)
+  @fixture function different_module_f() :dmf_result end
+  @fixture function different_module_g(different_module_f)
     return [different_module_f, :dmg_result]
   end
 

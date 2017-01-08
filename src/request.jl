@@ -15,6 +15,6 @@ end
 
 Request() = Request(nothing, nothing)
 
-@fixture request function()
+@fixture function request()
   Request()
 end

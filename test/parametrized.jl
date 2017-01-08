@@ -1,7 +1,7 @@
 # parametrized fixture called
 let
   remember = []
-  @fixture f params=(0, 1) function(request)
+  @fixture params=(0, 1) function f(request)
     request.param
   end
   @pytest function(f)
@@ -13,14 +13,14 @@ end
 # parametrized and non-parametrized fixture mixed
 let
   remember = []
-  @fixture f params=(0, 1) function(request)
+  @fixture params=(0, 1) function f(request)
     request.param
   end
-  @fixture g params=('a', 0.1) function(request)
+  @fixture params=('a', 0.1) function g(request)
     request.param
   end
   h_counter = 0
-  @fixture h function()
+  @fixture function h()
     h_counter += 1
   end
   @pytest function(f, g, h)
@@ -32,13 +32,13 @@ end
 # dependency as parametrized and non-parametrized fixtures
 let
   remember = []
-  @fixture f params=(0, 1) function(request)
+  @fixture params=(0, 1) function f(request)
     request.param
   end
   g_counter = 0
-  @fixture g function(request) g_counter += 1 end
+  @fixture function g(request) g_counter += 1 end
   h_counter = 0
-  @fixture h function(f, g) return (f, g, h_counter += 1) end
+  @fixture function h(f, g) return (f, g, h_counter += 1) end
   @pytest function(h)
     push!(remember, h)
   end
@@ -49,8 +49,8 @@ end
 let
   remember = []
   f_counter = 0
-  @fixture f function() f_counter += 1 end
-  @fixture g params=('a', 0.1, []) function(f, request)
+  @fixture function f() f_counter += 1 end
+  @fixture params=('a', 0.1, []) function g(f, request)
     (f, request.param)
   end
   @pytest function(g)
@@ -62,13 +62,13 @@ end
 # diamond shaped dependency
 let
   remember = []
-  @fixture f params=([], "a") function(request)
+  @fixture params=([], "a") function f(request)
     request.param
   end
   g_counter = 0
-  @fixture g function(f) return (f, g_counter += 1) end
+  @fixture function g(f) return (f, g_counter += 1) end
   h_counter = 0
-  @fixture h function(f) return (f, h_counter += 1) end
+  @fixture function h(f) return (f, h_counter += 1) end
   @pytest function(g, h)
     push!(remember, (g,h))
   end
@@ -79,7 +79,7 @@ end
 let
   remember = []
   param1 = 'a'
-  @fixture f params=(param1, ) function(request)
+  @fixture params=(param1, ) function f(request)
     request.param
   end
   @pytest function(f) push!(remember, f) end

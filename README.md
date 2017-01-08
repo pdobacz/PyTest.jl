@@ -21,16 +21,16 @@ When in need of a particular test resources: `needed_resource` and `needed_resou
 using PyTest
 using TestedModule
 
-@fixture needed_resource function()
+@fixture function needed_resource()
   # returns some needed_resource
 end
 
-@fixture needed_resource2 function(needed_resource)
+@fixture function needed_resource2(needed_resource)
   # needed_resource here will hold the former fixture!
   # returns some other needed_resource2
 end
 
-@pytest function(needed_resource, needed_resource2)
+@pytest function my_test(needed_resource, needed_resource2)
   # test body using both resources
   # (gets fresh instances of both resources for every @pytest invocation)
 end
@@ -41,15 +41,15 @@ end
 A more concrete example to shed more light:
 
 ```julia
-@fixture matrix_size function()
+@fixture function matrix_size()
   return 1200
 end
 
-@fixture random_numbers function(matrix_size)
+@fixture function random_numbers(matrix_size)
   return randn(matrix_size)
 end
 
-@fixture random_square_matrix function(matrix_size)
+@fixture function random_square_matrix(matrix_size)
   return randn(matrix_size, matrix_size)
 end
 
@@ -62,7 +62,7 @@ end
 If a resource needs teardown to be done after tests are over, use the `produce` function instead of returning in the fixture function:
 
 ```julia
-@fixture torndown()
+@fixture function torndown()
   produce("some result")
   # here do the teardown
   # this will be called after a test using this completes
@@ -91,11 +91,11 @@ Fixtures can be parametrized. For any `@pytest` invocation that depends on param
 In a parametrized fixture, the value of a parameter is fetched using a special `request` fixture:
 
 ```julia
-@fixture integer_number params=[1, 2] function(request)
+@fixture params=[1, 2] function integer_number(request)
   return request.param
 end
 
-@fixture some_character params=['a', 'c'] function(request)
+@fixture params=['a', 'c'] function some_character(request)
   return request.param
 end
 

@@ -1,7 +1,7 @@
 # smoke test
 let
-  @fixture f function() :f_result end
-  @fixture g function(f) f end
+  @fixture function f() :f_result end
+  @fixture function g(f) f end
 
   @pytest function(f)
     @test f == :f_result
@@ -13,12 +13,12 @@ end
 
 # correct syntax, chaining of fixtures, basic usage flow
 let
-  @fixture f function() return [:f_result] end
-  @fixture g function(f)
+  @fixture function f() return [:f_result] end
+  @fixture function g(f)
     [[:g_result]; f]
   end
-  @fixture h (g, f) -> [[:h_result]; f; g]
-  @fixture k (h, f) -> [[:k_result]; h; f]
+  @fixture function h(g, f) return [[:h_result]; f; g] end
+  @fixture function k(h, f) return [[:k_result]; h; f] end
 
   @pytest function(f, g, h, k)
     @test f == [:f_result]
@@ -32,9 +32,9 @@ end
 let
   counter = 0
 
-  @fixture f function() counter += 1 end
-  @fixture g function(f) f end
-  @fixture h function(f, g) return [f; g] end
+  @fixture function f() counter += 1 end
+  @fixture function g(f) f end
+  @fixture function h(f, g) return [f; g] end
 
   @pytest function(f)
     @test f == 1
@@ -59,12 +59,12 @@ end
 
 # correct scoping within and outside fixture/test bodies
 let
-  @fixture f function() :f_result end
-  @fixture g function(f)
+  @fixture function f() :f_result end
+  @fixture function g(f)
     @test f == :f_result
     f
   end
-  @fixture h function(g)
+  @fixture function h(g)
     @test typeof(f) == PyTest.Fixture
     @test g == :f_result
     g
@@ -94,16 +94,16 @@ end
 
 # redefinition of fixture
 let
-  @fixture f function() :one end
-  @fixture f function() :two end
+  @fixture function f() :one end
+  @fixture function f() :two end
   @pytest function(f) @test f == :two end
 end
 
 # use of :fixture_name in fixture body?
 # not sure if relevant?
 let
-  @fixture f function() :f_result end
-  @fixture g function(f) :f end
+  @fixture function f() :f_result end
+  @fixture function g(f) :f end
   @pytest function(f, g)
     @test f == :f_result
     @test g == :f
@@ -113,19 +113,19 @@ end
 # use of imported symbols in fixture/test body
 using different_module
 let
-  @fixture f function() @test some_function() == :some_function_result end
+  @fixture function f() @test some_function() == :some_function_result end
   @pytest function(f) @test some_function() == :some_function_result end
 end
 
 # teardown gets called in right order
 let
   active_objects = []
-  @fixture f function()
+  @fixture function f()
     produce(push!(active_objects, :f_result))  # next lines are teardown
     pop!(active_objects)
   end
-  @fixture g function(f) push!(active_objects, :g_result) end
-  @fixture h function(f, g)
+  @fixture function g(f) push!(active_objects, :g_result) end
+  @fixture function h(f, g)
     produce(push!(active_objects, :h_result))  # ditto
     push!(active_objects, :h_down)
   end
@@ -138,11 +138,11 @@ end
 # tears down even if intermediate fixture is noop
 let
   deleted = []
-  @fixture f function()
+  @fixture function f()
     produce(nothing)
     push!(deleted, :f_result)
   end
-  @fixture g function(f) end
+  @fixture function g(f) end
   @pytest function(g) error end
   @test deleted == [:f_result]
 end
@@ -150,11 +150,11 @@ end
 # tears down also on exception in test
 let
   deleted = []
-  @fixture f function()
+  @fixture function f()
     produce(nothing)
     push!(deleted, :f_result)
   end
-  @fixture g function(f)
+  @fixture function g(f)
     produce(nothing)
     push!(deleted, :g_result)
   end
@@ -165,15 +165,15 @@ end
 # tears down also on exception in fixture
 let
   deleted = []
-  @fixture f function()
+  @fixture function f()
     produce(nothing)
     push!(deleted, :f_result)
   end
-  @fixture g function(f)
+  @fixture function g(f)
     produce(nothing)
     push!(deleted, :g_result)
   end
-  @fixture h function(g) end
+  @fixture function h(g) end
   @pytest function(h) error end
   @test deleted == [:f_result, :g_result]
 end

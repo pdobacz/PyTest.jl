@@ -15,17 +15,22 @@ end
 ```
 """
 macro fixture(args...)
-  s = args[1]
   fixture_function = args[end]
 
   # remaining middle arguments should be keyword arguments like params=(1, 2, 3)
-  kwargs_expr = get_kwargs_expr(args[2:end-1])
+  kwargs_expr = get_kwargs_expr(args[1:end-1])
 
-  typeof(s) == Symbol || throw(ArgumentError("s must be an indentifier"))
-  fixture_function.head in [:function, :->] || throw(ArgumentError("fixture_function should be a function"))
-  fixture_function.args[1].head == :call && throw(ArgumentError("fixture_function should be anonymous"))
+  if fixture_function.head != :function || fixture_function.args[1].head != :call
+    throw(ArgumentError("fixture_function should be a named function"))
+  end
+
+  # symbol of the fixture
+  s = Symbol(string(fixture_function.args[1].args[1]))
 
   fargs, escfargs = get_fixtures_from_function(fixture_function)
+
+  # we need to do this because named functions cannot be inserted in Fixture constructor (see below)
+  anonymized_fixture_function = Expr(:function, Expr(:tuple, fargs...), fixture_function.args[2])
 
   return quote
     fixtures = $escfargs
@@ -35,7 +40,10 @@ macro fixture(args...)
 
     # build the Fixture instance and assign to the given variable
     kwargs = Dict{Symbol, Any}($kwargs_expr...)
-    $(esc(s)) = Fixture($(string(s)), $(esc(fixture_function)), $fargs, fixtures_dict,
+    $(esc(s)) = Fixture($(string(s)),
+                        $(esc(anonymized_fixture_function)),
+                        $fargs,
+                        fixtures_dict,
                         kwargs)
   end
 end

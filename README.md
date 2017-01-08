@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/pdobacz/PyTest.jl.svg?branch=master)](https://travis-ci.org/pdobacz/PyTest.jl)
 [![Coverage Status](https://coveralls.io/repos/github/pdobacz/PyTest.jl/badge.svg?branch=master)](https://coveralls.io/github/pdobacz/PyTest.jl?branch=master)
 
-At the moment, *PyTest.jl* allows for basic setting up of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
+At the moment, *PyTest.jl* allows for basic setup/teardown of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
+
+**IMPORTANT NOTICE** Looking for packages which could use *PyTest.jl* to pivot further development!
 
 ## Instalation
 
@@ -15,7 +17,7 @@ Pkg.clone("git://github.com/pdobacz/PyTest.jl.git")
 
 ## Example fixture use
 
-When in need of a particular test resources: `needed_resource` and `needed_resource2` (which may depend on each other), you can setup fresh instances of the resources (i.e. test fixtures) as follows:
+When in need of particular test resources: `needed_resource` and `needed_resource2` (which may depend on each other), you can setup fresh instances of the resources (i.e. test fixtures) as follows:
 
 ```julia
 using PyTest
@@ -66,9 +68,10 @@ If a resource needs teardown to be done after tests are over, use the `produce` 
   produce("some result")
   # here do the teardown
   # this will be called after a test using this completes
+end
 ```
 
-`PyTest.jl` uses `Base.Test` (in its `v0.5` flavour -- `BaseTestNext`), so every `@pytest` is also a (basic) `@testset`. A description to `@testset` can be given as a name of the test function:
+`PyTest.jl` uses `Base.Test` (in its `v0.5` flavour -- `BaseTestNext`), so every `@pytest` is also a `@testset`. A description to `@testset` can be given as a name of the test function:
 
 ```julia
 @pytest function test_one_equals_one()
@@ -114,7 +117,7 @@ This should print (among `Base.Test` summaries):
 
 ## Example builtin fixture: `tempdir_fixture`
 
-At this stage there is a single builtin fixture `tempdir_fixture` which provides a fresh temporary directory, created and torndown specifically for the particular test.
+At this stage there is only one builtin fixture `tempdir_fixture` which provides a fresh temporary directory, created and torndown specifically for the particular test.
 
 ```julia
 remember = ""
@@ -125,7 +128,7 @@ end
 @test !(isdir(remember))
 ```
 
-**NOTE** for more ideas on what builtin fixtures _could potentially_ be ofered look in [`pytest` docs here](http://doc.pytest.org/en/latest/builtin.html#builtin-fixtures-function-arguments)
+**NOTE** for more ideas on what builtin fixtures _could potentially_ offer, look in [`pytest` docs here](http://doc.pytest.org/en/latest/builtin.html#builtin-fixtures-function-arguments)
 
 ## Using with Base Test @testset
 

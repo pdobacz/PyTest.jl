@@ -27,16 +27,14 @@ macro fixture(args...)
   # symbol of the fixture
   s = Symbol(string(fixture_function.args[1].args[1]))
 
-  fargs, escfargs = get_fixtures_from_function(fixture_function)
+  fargs, escfargs = scan_for_fixtures(fixture_function)
 
   # we need to do this because named functions cannot be inserted in Fixture constructor (see below)
   anonymized_fixture_function = Expr(:function, Expr(:tuple, fargs...), fixture_function.args[2])
 
   return quote
-    fixtures = $escfargs
-
     # gather all dependency-fixtures from this fixture
-    fixtures_dict = Dict{Symbol, Fixture}(zip($fargs, fixtures))
+    fixtures_dict = Dict{Symbol, Fixture}(zip($fargs, $escfargs))
 
     # build the Fixture instance and assign to the given variable
     kwargs = Dict{Symbol, Any}($kwargs_expr...)
@@ -68,7 +66,7 @@ macro pytest(test_function)
     test_name = "anonymous"
   end
 
-  fargs, escfargs = get_fixtures_from_function(test_function)
+  fargs, escfargs = scan_for_fixtures(test_function)
 
   return quote
     full_test_name = get_full_test_name(@__FILE__, $test_name)
@@ -152,7 +150,7 @@ end
 get_full_test_name(test_path::Void, test_name) = "<repl>/$test_name"
 
 "Convenience function to extract information from `@pytest` `@fixture` call"
-function get_fixtures_from_function(f)
+function scan_for_fixtures(f)
   fargs = [farg for farg in f.args[1].args[1:end]]
   if f.args[1].head == :call
     deleteat!(fargs, 1)

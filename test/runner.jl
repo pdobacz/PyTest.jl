@@ -1,4 +1,4 @@
-runner_path = joinpath(Pkg.dir(), "PyTest/src/runner.jl")
+runner_path = joinpath(dirname(@__FILE__), "../src/runner.jl")
 julia_exe = Base.julia_cmd()
 
 # FIXME: ugly way of making the test pass - come up with a way to really test test selection
@@ -7,7 +7,7 @@ tests_count_indicator(passed, total) =
   VERSION >= v"0.5" ? "test set    |    $passed      $total" :
                       "test set      |    $passed      $total"
 
-cd(joinpath(Pkg.dir(), "PyTest/test/test_package")) do
+cd(joinpath(dirname(@__FILE__), "test_package")) do
   @test contains(readstring(`$julia_exe $runner_path`),
                  tests_count_indicator(3,3))
 

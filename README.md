@@ -9,10 +9,8 @@ At the moment, *PyTest.jl* allows for basic setup/teardown of test resources usi
 
 ## Instalation
 
-To install, use the `Pkg.clone`:
-
 ```julia
-Pkg.clone("git://github.com/pdobacz/PyTest.jl.git")
+Pkg.add("PyTest")
 ```
 
 ## Example fixture use

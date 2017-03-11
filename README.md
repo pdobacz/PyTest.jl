@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/pdobacz/PyTest.jl.svg?branch=master)](https://travis-ci.org/pdobacz/PyTest.jl)
 [![Coverage Status](https://coveralls.io/repos/github/pdobacz/PyTest.jl/badge.svg?branch=master)](https://coveralls.io/github/pdobacz/PyTest.jl?branch=master)
 
+[![PyTest](http://pkg.julialang.org/badges/PyTest_0.5.svg)](http://pkg.julialang.org/?pkg=PyTest)
+ [![PyTest](http://pkg.julialang.org/badges/PyTest_0.6.svg)](http://pkg.julialang.org/?pkg=PyTest)
+
 At the moment, *PyTest.jl* allows for basic setup/teardown of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
 
 **IMPORTANT NOTICE** Looking for packages which could use *PyTest.jl* to pivot further development!

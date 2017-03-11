@@ -88,7 +88,7 @@ function get_kwargs_expr(keyword_args)
     if !(arg.head == :(=) && isa(arg.args[1], Symbol))
       throw(ArgumentError("middle arguments to @fixture must have a=b form"))
     end
-    push!(kwargs_declarations, Expr(:(=>), Expr(:quote, arg.args[1]), esc(arg.args[2])))
+    push!(kwargs_declarations, Expr(:call, :(=>), Expr(:quote, arg.args[1]), esc(arg.args[2])))
   end
   kwargs_expr = Expr(:vect, kwargs_declarations...)
 end

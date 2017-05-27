@@ -10,6 +10,9 @@ At the moment, *PyTest.jl* allows for basic setup/teardown of test resources usi
 
 **IMPORTANT NOTICE** Looking for packages which could use *PyTest.jl* to pivot further development!
 
+**IMPORTANT NOTICE 2** On Julia `v0.6`, PyTest.jl may flood you with depwarns of `produce`/`consume`.
+Looking for solutions to this.
+
 ## Instalation
 
 ```julia

@@ -4,7 +4,7 @@ julia_exe = Base.julia_cmd()
 # FIXME: ugly way of making the test pass - come up with a way to really test test selection
 "Returns an expected output from Base.Test to check if tests are selected as expected"
 tests_count_indicator(passed, total) =
-  v"0.5" <= VERSION < v"0.6.0-pre.alpha" ? "test set    |    $passed      $total" :
+  v"0.5" <= VERSION < v"0.6.0-dev.2370" ? "test set    |    $passed      $total" :
                                            "test set      |    $passed      $total"
 
 cd(joinpath(dirname(@__FILE__), "test_package")) do

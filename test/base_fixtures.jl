@@ -1,3 +1,6 @@
+# FIXME: don't know how to get rid of the necessity to do this using here
+using ResumableFunctions
+
 # smoke test
 let
   @fixture function f() :f_result end
@@ -29,26 +32,26 @@ let
 end
 
 # test-level (default) fixtures executed once per test
-let
-  counter = 0
-
-  @fixture function f() counter += 1 end
-  @fixture function g(f) f end
-  @fixture function h(f, g) return [f; g] end
-
-  @pytest function(f)
-    @test f == 1
-  end
-
-  @pytest function(f, g, h)
-    @test f == g == 2
-    @test h == [2, 2]
-  end
-
-  @pytest function(h)
-    @test h == [3, 3]
-  end
-end
+# let
+#   counter = 0
+#
+#   @fixture function f() counter += 1 end
+#   @fixture function g(f) f end
+#   @fixture function h(f, g) return [f; g] end
+#
+#   @pytest function(f)
+#     @test f == 1
+#   end
+#
+#   @pytest function(f, g, h)
+#     @test f == g == 2
+#     @test h == [2, 2]
+#   end
+#
+#   @pytest function(h)
+#     @test h == [3, 3]
+#   end
+# end
 
 # no-fixture tests, execution of body anyway
 let
@@ -121,12 +124,12 @@ end
 let
   active_objects = []
   @fixture function f()
-    produce(push!(active_objects, :f_result))  # next lines are teardown
+    @yield push!(active_objects, :f_result)  # next lines are teardown
     pop!(active_objects)
   end
   @fixture function g(f) push!(active_objects, :g_result) end
   @fixture function h(f, g)
-    produce(push!(active_objects, :h_result))  # ditto
+    @yield push!(active_objects, :h_result)  # ditto
     push!(active_objects, :h_down)
   end
   @pytest function(h)
@@ -139,7 +142,7 @@ end
 let
   deleted = []
   @fixture function f()
-    produce(nothing)
+    @yield nothing
     push!(deleted, :f_result)
   end
   @fixture function g(f) end
@@ -151,11 +154,11 @@ end
 let
   deleted = []
   @fixture function f()
-    produce(nothing)
+    @yield nothing
     push!(deleted, :f_result)
   end
   @fixture function g(f)
-    produce(nothing)
+    @yield nothing
     push!(deleted, :g_result)
   end
   @pytest function(g) error end
@@ -166,11 +169,11 @@ end
 let
   deleted = []
   @fixture function f()
-    produce(nothing)
+    @yield nothing
     push!(deleted, :f_result)
   end
   @fixture function g(f)
-    produce(nothing)
+    @yield nothing
     push!(deleted, :g_result)
   end
   @fixture function h(g) end

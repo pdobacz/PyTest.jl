@@ -2,6 +2,9 @@
 module different_module
   using PyTest
 
+  # FIXME: can we get rid of this?
+  using ResumableFunctions
+
   export different_module_f, different_module_g,
          some_function
 

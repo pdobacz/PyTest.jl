@@ -10,8 +10,8 @@ using Base.Test
 @testset "PyTest tests" begin
   include("base_fixtures.jl")
   include("request.jl")
-  include("parametrized.jl")
-  include("basetest_integration.jl")
+  # include("parametrized.jl")
+  # include("basetest_integration.jl")
   include("runner.jl")
   include("builtin/tempdir.jl")
 end

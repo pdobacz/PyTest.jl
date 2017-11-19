@@ -25,14 +25,22 @@ macro fixture(args...)
   end
 
   # symbol of the fixture
-  s = Symbol(string(fixture_function.args[1].args[1]))
+  s_string = string(fixture_function.args[1].args[1])
+  s = Symbol(s_string)
 
   fargs, escfargs = scan_for_fixtures(fixture_function)
 
-  # we need to do this because named functions cannot be inserted in Fixture constructor (see below)
-  anonymized_fixture_function = Expr(:function, Expr(:tuple, fargs...), fixture_function.args[2])
+  # NOTE 1: we need to be anonymized because named functions cannot be
+  # inserted in Fixture constructor (see below)
+  # NOTE 2: we need to change the name of the function, because @resumable registeres the name
+  fixture_function.args[1].args[1] = Symbol("_resumable_internal" * s_string)
 
-  return quote
+  anonymized_fixture_function =
+    Expr(:macrocall,
+         Symbol("@resumable"),
+         fixture_function)
+
+  quote
     # gather all dependency-fixtures from this fixture
     fixtures_dict = Dict{Symbol, Fixture}(zip($fargs, $escfargs))
 
@@ -120,7 +128,7 @@ function do_single_test_run(fixtures, test_function, displayable_test_name;
   # empty collection of fixtures' results
   results = Dict{Symbol, Any}()
   # empty collection of fixtures' tasks (for pytest-style teardown)
-  tasks = Dict{Symbol, Task}()
+  tasks = Dict{Symbol, Any}()
 
   try
     # go through all fixtures used (recursively) and evaluate
@@ -161,7 +169,7 @@ function scan_for_fixtures(f)
 end
 
 "Convenience function to call a single fixture, after all dependencies are called"
-function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Task},
+function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Any},
                             param_set::Dict{Symbol, Any};
                             caller_name=Symbol(""))
   # FIXME: remove condition on :request, see also below
@@ -171,8 +179,8 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks:
   farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks, param_set;
                                      caller_name=fixture.s
                                      ) for farg in fixture.fargs]
-  new_task = Task(() -> fixture.f(farg_results...))
-  new_result = consume(new_task)
+  fixture_generator = (result for result in fixture.f(farg_results...))
+  (new_result, next_state) = next(fixture_generator, start(fixture_generator))
 
   # FIXME: refac to have RequestFixture? maybe...
   if fixture.s == :request && isa(new_result, Request)
@@ -183,24 +191,24 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks:
   end
 
   results[fixture.s] = new_result
-  tasks[fixture.s] = new_task
+  tasks[fixture.s] = (fixture_generator, next_state)
 
   new_result
 end
 
 "Convenience function to call the teardown bits, after all dependencies got torn down"
-function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Task})
+function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Any})
   if !(fixture.s in keys(tasks))
     return nothing
   end
   [teardown_fixture(fixture.fixtures_dict[farg], tasks) for farg in fixture.fargs]
 
-  teardown_task = tasks[fixture.s]
-  if(!istaskdone(teardown_task))
-    consume(teardown_task)
+  teardown = tasks[fixture.s]
+  if(!done(teardown...))
+    next(teardown...)
   end
 
-  assert(istaskdone(tasks[fixture.s]))  # extra check just in case
+  assert(done(teardown...))  # extra check just in case
   delete!(tasks, fixture.s)
   nothing
 end

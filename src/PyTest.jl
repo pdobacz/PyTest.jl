@@ -7,6 +7,7 @@ export @fixture, @pytest,
        tempdir_fixture, request
 
 using Base.Test
+using ResumableFunctions
 
 include("fixture.jl")
 include("runner_args.jl")

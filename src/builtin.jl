@@ -13,6 +13,6 @@ end
 # FIXME this is not documentable, hmm...
 @fixture function tempdir_fixture()
   the_directory = Base.mktempdir()
-  produce(the_directory)  # next lines are fixture teardown
+  @yield the_directory  # next lines are fixture teardown
   rm(the_directory, recursive=true)
 end

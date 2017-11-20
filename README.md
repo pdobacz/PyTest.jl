@@ -3,15 +3,11 @@
 [![Build Status](https://travis-ci.org/pdobacz/PyTest.jl.svg?branch=master)](https://travis-ci.org/pdobacz/PyTest.jl)
 [![Coverage Status](https://coveralls.io/repos/github/pdobacz/PyTest.jl/badge.svg?branch=master)](https://coveralls.io/github/pdobacz/PyTest.jl?branch=master)
 
-[![PyTest](http://pkg.julialang.org/badges/PyTest_0.5.svg)](http://pkg.julialang.org/?pkg=PyTest)
- [![PyTest](http://pkg.julialang.org/badges/PyTest_0.6.svg)](http://pkg.julialang.org/?pkg=PyTest)
+[![PyTest](http://pkg.julialang.org/badges/PyTest_0.6.svg)](http://pkg.julialang.org/?pkg=PyTest)
 
 At the moment, *PyTest.jl* allows for basic setup/teardown of test resources using [pytest](http://doc.pytest.org/en/latest/index.html#)-inspired approach with fixtures.
 
 **IMPORTANT NOTICE** Looking for packages which could use *PyTest.jl* to pivot further development!
-
-**IMPORTANT NOTICE 2** On Julia `v0.6`, PyTest.jl may flood you with depwarns of `produce`/`consume`.
-Looking for solutions to this.
 
 ## Instalation
 
@@ -65,11 +61,13 @@ end
 end
 ```
 
-If a resource needs teardown to be done after tests are over, use the `produce` function instead of returning in the fixture function:
+If a resource needs teardown to be done after tests are over, use the `@yield` macro provided by [ResumableFunctions](https://github.com/BenLauwens/ResumableFunctions.jl) instead of returning in the fixture function:
 
 ```julia
+using ResumableFunctions
+
 @fixture function torndown()
-  produce("some result")
+  @yield "some result"
   # here do the teardown
   # this will be called after a test using this completes
 end
@@ -134,7 +132,7 @@ end
 
 **NOTE** for more ideas on what builtin fixtures _could potentially_ offer, look in [`pytest` docs here](http://doc.pytest.org/en/latest/builtin.html#builtin-fixtures-function-arguments)
 
-## Using with Base Test @testset
+## Using with Base Test `@testset`
 
 To use *PyTest.jl* fixtures in tests using standard `Base.Test.@testset`, currently one needs to nest the invocations:
 

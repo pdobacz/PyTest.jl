@@ -32,26 +32,30 @@ let
 end
 
 # test-level (default) fixtures executed once per test
-# let
-#   counter = 0
-#
-#   @fixture function f() counter += 1 end
-#   @fixture function g(f) f end
-#   @fixture function h(f, g) return [f; g] end
-#
-#   @pytest function(f)
-#     @test f == 1
-#   end
-#
-#   @pytest function(f, g, h)
-#     @test f == g == 2
-#     @test h == [2, 2]
-#   end
-#
-#   @pytest function(h)
-#     @test h == [3, 3]
-#   end
-# end
+let
+  @fixture function f() rand() end
+  @fixture function g(f) f end
+  @fixture function h(f, g) return [f; g] end
+
+  the_fs = []
+
+  @pytest function(f)
+    push!(the_fs, f)
+  end
+
+  @pytest function(f, g, h)
+    push!(the_fs, f)
+    @test f == g
+    @test h == [f, f]
+  end
+
+  @pytest function(h)
+    push!(the_fs, h[1])
+    @test h[1] == h[2]
+  end
+
+  @test allunique(the_fs) || "$the_fs should be different"
+end
 
 # no-fixture tests, execution of body anyway
 let

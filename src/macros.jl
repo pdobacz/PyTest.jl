@@ -32,8 +32,8 @@ macro fixture(args...)
 
   # NOTE 1: we need to be anonymized because named functions cannot be
   # inserted in Fixture constructor (see below)
-  # NOTE 2: we need to change the name of the function, because @resumable registeres the name
-  fixture_function.args[1].args[1] = Symbol("_resumable_internal" * s_string)
+  # NOTE 2: we need to change the name of the function, because @resumable registers the name
+  fixture_function.args[1].args[1] = Symbol("_resumable_internal_" * s_string)
 
   anonymized_fixture_function =
     Expr(:macrocall,
@@ -46,7 +46,7 @@ macro fixture(args...)
 
     # build the Fixture instance and assign to the given variable
     kwargs = Dict{Symbol, Any}($kwargs_expr...)
-    $(esc(s)) = Fixture($(string(s)),
+    $(esc(s)) = Fixture($(s_string),
                         $(esc(anonymized_fixture_function)),
                         $fargs,
                         fixtures_dict,

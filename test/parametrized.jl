@@ -19,9 +19,9 @@ let
   @fixture params=('a', 0.1) function g(request)
     request.param
   end
-  h_counter = 0
+  h_counter = Dict("key" => 0)
   @fixture function h()
-    h_counter += 1
+    h_counter["key"] = h_counter["key"] + 1
   end
   @pytest function(f, g, h)
     push!(remember, (f, g, h))
@@ -35,10 +35,15 @@ let
   @fixture params=(0, 1) function f(request)
     request.param
   end
-  g_counter = 0
-  @fixture function g(request) g_counter += 1 end
-  h_counter = 0
-  @fixture function h(f, g) return (f, g, h_counter += 1) end
+  g_counter = Dict("key" => 0)
+  @fixture function g(request)
+    g_counter["key"] = g_counter["key"] + 1
+  end
+  h_counter = Dict("key" => 0)
+  @fixture function h(f, g)
+    h_counter["key"] = h_counter["key"] + 1
+    f, g, h_counter["key"]
+  end
   @pytest function(h)
     push!(remember, h)
   end
@@ -48,8 +53,10 @@ end
 # dependent parametrized fixture
 let
   remember = []
-  f_counter = 0
-  @fixture function f() f_counter += 1 end
+  f_counter = Dict("key" => 0)
+  @fixture function f()
+    f_counter["key"] = f_counter["key"] + 1
+  end
   @fixture params=('a', 0.1, []) function g(f, request)
     (f, request.param)
   end
@@ -65,10 +72,16 @@ let
   @fixture params=([], "a") function f(request)
     request.param
   end
-  g_counter = 0
-  @fixture function g(f) return (f, g_counter += 1) end
-  h_counter = 0
-  @fixture function h(f) return (f, h_counter += 1) end
+  g_counter = Dict("key" => 0)
+  @fixture function g(f)
+    g_counter["key"] = g_counter["key"] + 1
+    f, g_counter["key"]
+  end
+  h_counter = Dict("key" => 0)
+  @fixture function h(f)
+    h_counter["key"] = h_counter["key"] + 1
+    f, h_counter["key"]
+  end
   @pytest function(g, h)
     push!(remember, (g,h))
   end

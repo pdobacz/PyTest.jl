@@ -127,18 +127,18 @@ function do_single_test_run(fixtures, test_function, displayable_test_name;
 
   # empty collection of fixtures' results
   results = Dict{Symbol, Any}()
-  # empty collection of fixtures' tasks (for pytest-style teardown)
-  tasks = Dict{Symbol, Any}()
+  # empty collection of fixtures' teardown resumables (for pytest-style teardown)
+  teardowns = Dict{Symbol, Teardown}()
 
   try
     # go through all fixtures used (recursively) and evaluate
-    farg_results = [get_fixture_result(f, results, tasks, param_set) for f in fixtures]
+    farg_results = [get_fixture_result(f, results, teardowns, param_set) for f in fixtures]
 
     @testset "$displayable_test_name" begin
       test_function(farg_results...)
     end
   finally
-    [teardown_fixture(f, tasks) for f in fixtures]
+    [teardown_fixture(f, teardowns) for f in fixtures]
   end
 end
 
@@ -169,14 +169,15 @@ function scan_for_fixtures(f)
 end
 
 "Convenience function to call a single fixture, after all dependencies are called"
-function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks::Dict{Symbol, Any},
+function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any},
+                            teardowns::Dict{Symbol, Teardown},
                             param_set::Dict{Symbol, Any};
                             caller_name=Symbol(""))
   # FIXME: remove condition on :request, see also below
   if fixture.s in keys(results) && fixture.s != :request
     return results[fixture.s]
   end
-  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, tasks, param_set;
+  farg_results = [get_fixture_result(fixture.fixtures_dict[farg], results, teardowns, param_set;
                                      caller_name=fixture.s
                                      ) for farg in fixture.fargs]
   fixture_generator = (result for result in fixture.f(farg_results...))
@@ -191,24 +192,24 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any}, tasks:
   end
 
   results[fixture.s] = new_result
-  tasks[fixture.s] = (fixture_generator, next_state)
+  teardowns[fixture.s] = (fixture_generator, next_state)
 
   new_result
 end
 
 "Convenience function to call the teardown bits, after all dependencies got torn down"
-function teardown_fixture(fixture::Fixture, tasks::Dict{Symbol, Any})
-  if !(fixture.s in keys(tasks))
+function teardown_fixture(fixture::Fixture, teardowns::Dict{Symbol, Teardown})
+  if !(fixture.s in keys(teardowns))
     return nothing
   end
-  [teardown_fixture(fixture.fixtures_dict[farg], tasks) for farg in fixture.fargs]
+  [teardown_fixture(fixture.fixtures_dict[farg], teardowns) for farg in fixture.fargs]
 
-  teardown = tasks[fixture.s]
+  teardown = teardowns[fixture.s]
   if(!done(teardown...))
     next(teardown...)
   end
 
   assert(done(teardown...))  # extra check just in case
-  delete!(tasks, fixture.s)
+  delete!(teardowns, fixture.s)
   nothing
 end

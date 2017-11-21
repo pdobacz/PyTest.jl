@@ -9,6 +9,7 @@ export @fixture, @pytest,
 using Base.Test
 using ResumableFunctions
 
+include("types.jl")
 include("fixture.jl")
 include("runner_args.jl")
 

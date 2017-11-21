@@ -16,8 +16,8 @@ using Base.Test
   include("request.jl")
   include("parametrized.jl")
   include("basetest_integration.jl")
-  include("runner.jl")
   include("builtin/tempdir.jl")
+  include("runner.jl")
 end
 
 end

@@ -1,6 +1,3 @@
-# FIXME: avoid this (multiple ocurrences)
-using ResumableFunctions
-
 # named tests
 let
   @pytest function test_name()

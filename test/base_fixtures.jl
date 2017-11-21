@@ -1,6 +1,3 @@
-# FIXME: don't know how to get rid of the necessity to do this using here
-using ResumableFunctions
-
 # smoke test
 let
   @fixture function f() :f_result end

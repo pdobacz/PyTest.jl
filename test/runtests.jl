@@ -8,6 +8,9 @@ using PyTest
 using Base.Test
 
 @testset "PyTest tests" begin
+  # FIXME: avoid this
+  using ResumableFunctions
+
   include("base_fixtures.jl")
   include("exceptions.jl")
   include("request.jl")

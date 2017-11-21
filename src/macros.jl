@@ -93,7 +93,7 @@ end
 function get_kwargs_expr(keyword_args)
   kwargs_declarations = Array{Expr, 1}()
   for arg in keyword_args
-    if !(arg.head == :(=) && isa(arg.args[1], Symbol))
+    if !(:head in fieldnames(arg) && arg.head == :(=) && isa(arg.args[1], Symbol))
       throw(ArgumentError("middle arguments to @fixture must have a=b form"))
     end
     push!(kwargs_declarations, Expr(:call, :(=>), Expr(:quote, arg.args[1]), esc(arg.args[2])))

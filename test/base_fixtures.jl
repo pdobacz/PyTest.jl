@@ -85,11 +85,6 @@ let
   end
 end
 
-# undefined fixture
-let
-  @test_throws UndefVarError @pytest function(g) end
-end
-
 # fixture defined in different module
 using different_module
 let

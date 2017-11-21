@@ -1,3 +1,15 @@
+# empty parameter matrix
+let
+  remember = []
+  @fixture params=() function f(request)
+    request.param
+  end
+  @pytest function(f)
+    push!(remember, f)
+  end
+  @test remember == [nothing]
+end
+
 # parametrized fixture called
 let
   remember = []

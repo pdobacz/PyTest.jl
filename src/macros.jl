@@ -181,7 +181,9 @@ function get_fixture_result(fixture::Fixture, results::Dict{Symbol, Any},
                                      caller_name=fixture.s
                                      ) for farg in fixture.fargs]
   fixture_generator = (result for result in fixture.f(farg_results...))
-  (new_result, next_state) = next(fixture_generator, start(fixture_generator))
+  next_state = start(fixture_generator)
+  done(fixture_generator, next_state)
+  (new_result, next_state) = next(fixture_generator, next_state)
 
   # FIXME: refac to have RequestFixture? maybe...
   if fixture.s == :request && isa(new_result, Request)
